@@ -1,0 +1,9 @@
+[project]
+channels = ["conda-forge"]
+name = "scXMatch"
+platforms = ["linux-64"]
+version = "0.1.0"
+
+[tasks]
+
+[dependencies]
