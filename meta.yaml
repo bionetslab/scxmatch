@@ -6,8 +6,8 @@ package:
   version: {{ version }}
 
 source:
-  url: https://files.pythonhosted.org/packages/ff/09/4e95cb19742acc13ed2a3a3370a5c1518ef236e649deb09ddbef3729c6c0/scxmatch-0.0.2.tar.gz
-  sha256: 476fc7ce4597587571e7496db0ddb6139c85bfae86b37525fc8e7b5a31885a62
+  url: https://github.com/bionetslab/scxmatch/releases/download/scxmatch-{{ version }}/scxmatch-{{ version }}.tar.gz
+  sha256: 19a31ac2c2c5b8a3aafdde5f44bce19e6143f99a612d1c6257fa896db524298f
 
 build:
   noarch: python
@@ -18,14 +18,14 @@ build:
 
 requirements:
   build:
-    - python >=3.9,<3.10
+    - python >=3.9
   host:
-    - python >=3.9,<3.10
+    - python >=3.9
     - hatchling
     - pip
   run:
-    - python >=3.9,<3.10
-    - anndata >=0.10.9,
+    - python >=3.9
+    - anndata >=0.10.9
     - scipy >=1.13.1,<2
     - scanpy >=1.10.3,<2
     - graph-tool >=2.92,<3
@@ -43,5 +43,7 @@ about:
   home: https://github.com/bionetslab/scxmatch
 
 extra:
+  channels:
+    - conda-forge
   recipe-maintainers:
     - annmoel
