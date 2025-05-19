@@ -1,6 +1,6 @@
 [project]
 name = "scxmatch"
-version = "0.0.2"
+version = "0.0.1"
 authors = [
   { name="Anna Moeller", email="anna.moeller@fau.de" },
 ]
@@ -13,7 +13,7 @@ classifiers = [
 ]
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
-dependencies = ["anndata >=0.10.9, <0.11",
+dependencies = ["anndata >=0.10.9",
                 "scipy >=1.13.1, <2",
                 "scanpy >=1.10.3, <2"]
 
