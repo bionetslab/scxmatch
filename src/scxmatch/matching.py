@@ -8,7 +8,7 @@ try:
     from cupyx.scipy.spatial.distance import cdist as gpu_cdist
     import cupy as cp
     GPU = True
-    print("found cupy installation, will try use the GPU to calculate the distance matrix.")
+    print("found cupy installation, will try use the GPU to calculate the full distance matrix.")
 except:
     from scipy.spatial.distance import cdist as cpu_cdist
     GPU = False

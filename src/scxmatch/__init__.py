@@ -1,2 +1,3 @@
-from scxmatch.rosenbaum import *
-from scxmatch.matching import *
+from .rosenbaum import *
+from .matching import *
+from .utils import *

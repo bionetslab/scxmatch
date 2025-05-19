@@ -6,7 +6,7 @@ import scanpy as sc
 import scipy.sparse as sp
 from scipy.stats import rankdata
 
-from scxmatch.matching import *
+from .matching import *
 
 
 def cross_match_count(Z, matching, test_group):
@@ -71,7 +71,7 @@ def kNN(adata, k, metric):
     print("calculating kNN graph.")
     if sp.issparse(adata.X):
         adata.X = adata.X.toarray()  # Convert only if it's sparse
-    sc.pp.neighbors(adata, n_neighbors=k, metric=metric, n_pcs=0, transformer='pynndescent')
+    sc.pp.neighbors(adata, n_neighbors=k, metric=metric, n_pcs=0)
 
 
 def rosenbaum(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank=False, k=None, return_matching=False):
@@ -144,7 +144,7 @@ def rosenbaum(adata, group_by, test_group, reference=None, metric="sqeuclidean",
             raise ValueError(f"the test group {t} is not contained in your data.")
         
     if reference != None:       
-        adata = adata[adata.obs[group_by].isin(test_group + reference), :]
+        adata = adata[adata.obs[group_by].isin(test_group + reference), :].copy()
         
     if rank:
         print("computing variable-wise ranks.")
