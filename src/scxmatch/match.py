@@ -16,7 +16,17 @@ except:
     pass
 
 
-def calculate_distances(samples, metric):
+
+def _kNN(adata, k, metric):
+    print("calculating kNN graph.")
+    if sp.issparse(adata.X):
+        adata.X = adata.X.toarray()  # Convert only if it's sparse
+    sc.pp.neighbors(adata, n_neighbors=k, metric=metric, n_pcs=0, transformer='pynndescent')
+
+
+
+
+def _calculate_distances(samples, metric):
     if not isinstance(samples, np.ndarray):  # Check if it's a scipy sparse matrix
         samples = samples.toarray()
 
@@ -43,7 +53,7 @@ def calculate_distances(samples, metric):
     return distances
 
 
-def extract_matching(matching_map):
+def _extract_matching(matching_map):
     matching_list = []
     matched = set()  # To keep track of processed vertices
 
@@ -61,12 +71,11 @@ def extract_matching(matching_map):
             matching_list.append((v, partner))
             matched.add(v)
             matched.add(partner)
-    
     return matching_list
 
 
 
-def construct_graph_from_distances(distances):
+def _construct_graph_from_distances(distances):
     num_samples = distances.shape[0]
     print("creating distance graph with", num_samples, "samples")
     transposed_distances = distances.transpose()
@@ -76,7 +85,7 @@ def construct_graph_from_distances(distances):
     return G
 
 
-def construct_graph_via_kNN(adata):
+def _construct_graph_via_kNN(adata):
     distances = adata.obsp["distances"]
     max_dist = distances.max() 
     # only transform non-zero entries
@@ -98,9 +107,9 @@ def construct_graph_via_kNN(adata):
     return G
 
 
-def match(G, num_samples):
+def _match(G, num_samples):
     matching = max_cardinality_matching(G, weight=G.edge_properties["weight"], minimize=False) # "minimize=True" only works with a heuristic, therefore we use (max_distance + 1 - distance_ij) and maximize 
-    matching_list = extract_matching(matching)
+    matching_list = _extract_matching(matching)
     matching_list = [p for p in matching_list if ((p[0] < num_samples) and (p[1] < num_samples))]
     return matching_list
             

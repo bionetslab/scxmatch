@@ -1,7 +1,6 @@
 import numpy as np
 import anndata as ad
 import sys
-sys.path.append("../src")
 from scxmatch import *
 
 def simulate_data(n_obs, n_var):
