@@ -11,7 +11,6 @@ Due to its dependence on graph-tool, this package can only be installed from con
 ```bash
 conda install scxmatch -c conda-forge -c bioconda
 ```
-
 ---
 
 ## Requirements
