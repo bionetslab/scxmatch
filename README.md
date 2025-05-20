@@ -28,7 +28,7 @@ conda install scxmatch -c conda-forge -c bioconda
 ### `scxmatch.test`
 
 ```python
-scXMatch.test(
+scxmatch.test(
     adata,
     group_by,
     test_group,
