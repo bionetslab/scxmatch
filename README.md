@@ -7,20 +7,20 @@ This package provides a Python implementation inspired by the methodology descri
 ---
 
 ## Installation
-
+Due to its dependence on graph-tool, this package can only be installed from conda, not from PyPI. The channels need to be specified.
 ```bash
-pip install scxmatch
+conda install scxmatch -c conda-forge -c bioconda
 ```
 
 ---
 
 ## Requirements
 
-- Python ≥ 3.7
+- Python ≥ 3.9
 - `anndata`
-- `numpy`
+- `scanpy`
 - `scipy`
-- `graph-tool`
+- `graph-tool` $\geq$ 2.92
 
 ---
 
@@ -150,6 +150,8 @@ print(f"P-value: {p_val:.4f}, Z-score: {z:.2f}, Support: {support:.2%}")
 If you use `scXMatch` in your research, please cite the original paper and our publication:
 
 > Rosenbaum, P. R. (2005). An exact distribution-free test comparing two multivariate distributions based on adjacency. *Journal of the Royal Statistical Society: Series B*, 67(4), 515–530.
+
+
 > TBD
 
 ---
