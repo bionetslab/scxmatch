@@ -25,7 +25,7 @@ conda install scxmatch -c conda-forge -c bioconda
 
 ## API Documentation
 
-### `scXMatch.test`
+### `scxmatch.test`
 
 ```python
 scXMatch.test(
@@ -94,10 +94,10 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
 
 ---
 
-### `scXMatch.approximate_k`
+### `scxmatch.approximate_k`
 
 ```python
-scXMatch.approximate_k(total_RAM_available_gb, num_samples)
+scxmatch.approximate_k(total_RAM_available_gb, num_samples)
 ```
 
 #### Description
@@ -123,13 +123,13 @@ Estimates the largest feasible number of neighbors `k` for kNN graph constructio
 
 ```python
 import anndata as ad
-import scXMatch
+import scxmatch
 
 # Load your AnnData object
 adata = ad.read_h5ad("your_data.h5ad")
 
 # Run test
-p_val, z, support = scXMatch.test(
+p_val, z, support = scxmatch.test(
     adata=adata,
     group_by="cell_type",
     test_group="treated",
