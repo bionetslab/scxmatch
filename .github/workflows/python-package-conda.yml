@@ -15,11 +15,11 @@ jobs:
         with:
           miniconda-version: 'latest'
           channels: conda-forge, bioconda
-          mamba-version: "*"
-          channel-priority: true
-          auto-update-conda: false
-          auto-activate-base: false
-          activate-environment: scxmatch
-      
-      - name: Run MWE
-        run: python tests/test_mwe.py
+          auto-activate-base: true
+
+      - name: Install scxmatch and run test
+        shell: bash -l {0}  # ensures conda is properly initialized
+        run: |
+          conda create -n test-environment -y scxmatch
+          conda activate test-environment
+          python tests/test_mwe.py
