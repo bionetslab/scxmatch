@@ -22,4 +22,4 @@ jobs:
           activate-environment: scxmatch
       
       - name: Run MWE
-        run: python scxmatch/tests/test_mwe.py
+        run: python tests/test_mwe.py
