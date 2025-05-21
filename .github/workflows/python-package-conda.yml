@@ -8,20 +8,18 @@ jobs:
 
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Miniconda
-        uses: conda-incubator/setup-miniconda@v3
+        uses: conda-incubator/setup-miniconda@v2
         with:
-          miniforge-variant: Mambaforge
-          auto-update-conda: true
-
-      - name: Create env and install from Bioconda
-        run: |
-          mamba create -n test-env -y -c conda-forge -c bioconda scxmatch
-
+          miniconda-version: 'latest'
+          channels: conda-forge, bioconda
+          mamba-version: "*"
+          channel-priority: true
+          auto-update-conda: false
+          auto-activate-base: false
+          activate-environment: scxmatch
+      
       - name: Run MWE
-        shell: bash -l {0}
-        run: |
-          conda activate test-env
-          python scxmatch/tests/test_mwe.py
+        run: python scxmatch/tests/test_mwe.py
