@@ -1,10 +1,14 @@
-name: Test Bioconda Package
+name: Test MWE with Python 3.9-3.13
 
 on: [push, pull_request]
 
 jobs:
   test-bioconda-install:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        python-version: [3.9, 3.10, 3.11, 3.12, 3.13]
 
     steps:
       - name: Checkout repo
@@ -18,8 +22,9 @@ jobs:
           auto-activate-base: true
 
       - name: Install scxmatch and run test
-        shell: bash -l {0}  # ensures conda is properly initialized
+        shell: bash -l {0}
         run: |
-          conda create -n test-environment -y scxmatch
+          conda create -n test-environment -y python=${{ matrix.python-version }} scxmatch
           conda activate test-environment
+          python --version
           python tests/test_mwe.py
