@@ -1,4 +1,4 @@
-![scXMatch](./logo.svg)
+<img src="./logo.svg" alt="scXMatch" width="400"/>
 
 **scXMatch** (single-cell cross match) is a Python package that implements Rosenbaum's cross-match test using distance-based matching to assess statistical dependence between two groups of high-dimensional data. This is particularly useful in analyzing multivariate distributions in structured data, such as single-cell RNA-seq.
 
