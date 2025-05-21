@@ -1,0 +1,27 @@
+name: Test Bioconda Package
+
+on: [push, pull_request]
+
+jobs:
+  test-bioconda-install:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Set up Miniconda
+        uses: conda-incubator/setup-miniconda@v3
+        with:
+          miniforge-variant: Mambaforge
+          auto-update-conda: true
+
+      - name: Create env and install from Bioconda
+        run: |
+          mamba create -n test-env -y -c conda-forge -c bioconda scxmatch
+
+      - name: Run MWE
+        shell: bash -l {0}
+        run: |
+          conda activate test-env
+          python scxmatch/tests/test_mwe.py
