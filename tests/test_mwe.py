@@ -3,6 +3,7 @@ import anndata as ad
 import sys
 sys.path.append("..")
 from scxmatch import *
+np.random.seed(42)
 
 def simulate_data(n_obs, n_var):
     samples = [np.random.normal(0, 1, n_var) for _ in range(n_obs)]
@@ -22,7 +23,7 @@ def main():
     adata.obs[group_by] = np.random.choice([reference, test_group], size=n_obs)
     p, z, s = test(adata, group_by=group_by, test_group=test_group, reference=reference, metric="sqeuclidean", rank=False, k=k, return_matching=False)
     p, z, s = test(adata, group_by=group_by, test_group=test_group, reference=reference, metric="sqeuclidean", rank=False, k=None, return_matching=False)
-
+    
 
 if __name__ == "__main__":
     main()
