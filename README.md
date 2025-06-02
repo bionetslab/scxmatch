@@ -45,7 +45,7 @@ scxmatch.test(
     metric="sqeuclidean",
     rank=False,
     k=100,
-    return_matching=False
+    total_RAM_available_gb=None
 )
 ```
 
@@ -55,76 +55,32 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
 
 #### Parameters
 
-- **adata** (`anndata.AnnData` | `pandas.DataFrame`):  
-  The dataset containing features in `adata.X` and group labels in `adata.obs[group_by]`.
+**Parameters:**
 
-- **group_by** (`str`):  
-  Column name in `adata.obs` indicating group labels.
-
-- **test_group** (`str` or `List[str]`):  
-  The group being tested for statistical dependence.
-
-- **reference** (`str` or `List[str]`, optional):  
-  Reference group for comparison. If `None`, all non-`test_group` samples are used.
-
-- **metric** (`str`, default: `"sqeuclidean"`):  
-  Distance metric used for computing pairwise distances. Follows `scipy.spatial.distance.cdist` standards.
-
-- **rank** (`bool`, default: `False`):  
-  If `True`, rank-transform features before computing distances.
-
-- **k** (`int`, optional, default: `100`):  
-  Number of nearest neighbors to consider during graph construction. If `None`, all samples are considered.
-
-- **return_matching** (`bool`, default: `False`):  
-  If `True`, returns the matching graph and matched pairs along with test results.
-
+- `adata` (`anndata.AnnData`): The input data matrix. Features should be in `adata.X`, and group labels in `adata.obs[group_by]`.
+- `group_by` (`str`): Column in `adata.obs` indicating group labels.
+- `test_group` (`str` or `list of str`): The group(s) to be tested.
+- `reference` (`str` or `list of str`, optional): The reference group(s). If `None`, all non-test samples are used as reference.
+- `metric` (`str`, default `"sqeuclidean"`): Distance metric for matching. Follows `scipy.spatial.distance.cdist` standards.
+- `rank` (`bool`, default `True`): If `True`, features are rank-transformed before distance computation.
+- `k` (`int`, `"auto"`, or `"full"`, default `100`): Number of nearest neighbors to use for graph construction. If `full`, a full distance matrix will be calculated.
+- `total_RAM_available_gb` (`float`, optional): Required if `k="auto"`.
+  
 #### Returns
-
-- **p_value** (`float`):  
-  p-value of the statistical test.
-
-- **z_score** (`float`):  
-  Standardized z-score of the test statistic.
-
-- **relative_support** (`float`):  
-  Proportion of samples involved in the matching.
-
-- **G** (`graph-tool.Graph`, optional):  
-  Constructed graph (only returned if `return_matching=True`).
-
-- **matching** (`List[Tuple[int, int]]`, optional):  
-  List of index pairs representing the matching (only returned if `return_matching=True`).
+- `p_value` (`float`): P-value from the Rosenbaum crossmatch test.
+- `z_score` (`float`): Standardized test statistic.
+- `relative_support` (`float`): Proportion of samples included in the matching.
 
 #### Raises
+- `TypeError`: If the input `adata` is not an `AnnData` object.
+- `ValueError`: If `test_group` or `reference` contains values not present in `adata.obs[group_by]`.
+- `ValueError`: If `k="auto"` and `total_RAM_available_gb` is not provided.
+- `ValueError`: If `k` is not an integer, `"auto"`, or `"full"`.
 
-- `TypeError` if input is not an `AnnData` object.  
-- `ValueError` if `test_group` is not found in the group labels.
+#### Modifies:
 
----
-
-### `scxmatch.approximate_k`
-
-```python
-scxmatch.approximate_k(total_RAM_available_gb, num_samples)
-```
-
-#### Description
-
-Estimates the largest feasible number of neighbors `k` for kNN graph construction based on available RAM and number of samples.
-
-#### Parameters
-
-- **total_RAM_available_gb** (`float`):  
-  Available RAM in gigabytes.
-
-- **num_samples** (`int`):  
-  Number of samples in your dataset.
-
-#### Returns
-
-- **k** (`int`):  
-  Approximate value of `k` that can be used without exceeding memory limits.
+- Modifies `adata.obs` **in-place** by adding the following columns:
+  - `XMatch_partner_<test_group>_vs_<reference>`: The index of each sample’s matched partner in the MWMCM.
 
 ---
 
