@@ -1,13 +1,14 @@
 import anndata as ad
 import numpy as np
 from scipy.stats import rankdata
+import warnings
 
-from ._match import _kNN, _calculate_distances, _extract_matching, _construct_graph_via_kNN, _construct_graph_from_distances, _match
+from ._match import _kNN, _calculate_distances, _extract_matching, _construct_graph_via_kNN, _construct_graph_from_distances, _match, _add_partners_to_adata
 from ._count import _cross_match_count, _get_p_value, _get_z_score, _get_relative_support, _rosenbaum_test
+from ._utils import _approximate_k
 
 
-
-def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank=False, k=100, return_matching=False):
+def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank=False, k=100, total_RAM_available_gb=None):
     """
     Perform Rosenbaum's matching-based test for checking the association between two groups 
     using a distance-based matching approach.
@@ -16,8 +17,8 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
     -----------
     adata : anndata.AnnData or pd.DataFrame
         The input `AnnData` object containing the samples and their respective features.
-        The samples and their corresponding features should be stored in `data.X` and the
-        group labels in `data.obs[group_by]`. 
+        The samples and their corresponding features should be stored in `adata.X` and the
+        group labels in `adata.obs[group_by]`. 
         
     group_by : str
         The column in `data.obs` containing the group labels.
@@ -38,14 +39,10 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
         If `True`, ranks the features in the data matrix before performing the matching. This can help reduce
         the impact of varying scales of the features on the distance computation.
     
-    k : int, optional, default=100
+    k : int or str, optional, default=100
         The number of nearest neighbors to consider for each sample. This parameter is used to limit the
         number of samples considered during the matching process, which can help reduce computational
         complexity and memory usage. If set to None, all samples are considered.
-
-    return_matching : bool, optional, default=False
-        If `True`, returns the matching object along with the p-value, the z-score, and the relative support.
-        If `False`, only the p-value, z-score, and relative support are returned.
 
     Returns:
     --------
@@ -58,16 +55,7 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
     relative_support : float   
         The relative support of the matching, calculated as the ratio of the number of
         samples covered by the matching and the total number of samples.
-    
-    G : graph-tool `Graph` object
-        The graph representation of the samples and their distances, constructed from the input data.
-        This is returned only if `return_matching` is set to `True`.
         
-    matching : list of tuples
-        The matching pairs of samples, where each pair is represented as a tuple of indices.
-        This is returned only if `return_matching` is set to `True`.
-        
-    
     Raises:
     -------
     TypeError : If the input `data` is not an `AnnData` object.
@@ -78,9 +66,14 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
     scXMatch describes how likely it is to observe cross matches of the `test_group` and the `reference`
     group in a Maximum-Cardinality-Maximum-Weight-Matching computed based on distances. 
     """
-
     if not isinstance(adata, ad.AnnData):
         raise TypeError("the input must be an AnnData object.")
+    
+    if adata.is_view:
+        adata = adata.copy()
+        adata.obs.reset_index(inplace=True)
+        adata.obs.index = adata.obs.index.astype(str)
+        warnings.warn("The input AnnData object is a view, matching results will be written to a copy of it.")
         
     if not isinstance(test_group, list): 
         test_group = [test_group]
@@ -93,56 +86,54 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
         if t not in adata.obs[group_by].values:
             raise ValueError(f"the test group {t} is not contained in your data.")
         
+
     if reference != None:       
-        adata = adata[adata.obs[group_by].isin(test_group + reference), :]
-        
+        for r in reference:
+            if r not in adata.obs[group_by].values:
+                raise ValueError(f"the test group {t} is not contained in your data.")
+        subset = adata[adata.obs[group_by].isin(test_group + reference), :].copy()
+    else:
+        subset = adata.copy()
+    
     if rank:
         print("computing variable-wise ranks.")
-        adata.X = np.apply_along_axis(rankdata, axis=0, arr=adata.X)
+        subset.X = np.apply_along_axis(rankdata, axis=0, arr=subset.X)
+    
+    if not isinstance(k, int):
+        if k not in ["auto", "full"]:
+            raise ValueError("k must be an integer, 'auto', or 'full'.")
+
+    if k == "auto" and total_RAM_available_gb is None:
+        raise ValueError("If k is set to 'auto', total_RAM_available_gb must be provided.")
+    
+    if k != "auto" and (total_RAM_available_gb is not None):
+        warnings.warn("total_RAM_available_gb will be ignored, as k is not \"auto\".")
+    
+    
+    subset.obs["XMatch_group"] = np.where(subset.obs[group_by].isin(test_group), "test", "reference")
     
 
-    adata.obs["XMatch_group"] = np.where(adata.obs[group_by].isin(test_group), "test", "reference")
     
-    group_by = "XMatch_group"
-    test_group = "test"
-    print(adata.obs[group_by].value_counts())
-       
-    if k:
-        _kNN(adata, k, metric)
+    if k == "auto":
+        k = _approximate_k(total_RAM_available_gb, len(subset))
+        print(f"setting k to {k} based on the number of samples in the data.")
     
-    num_samples = len(adata)
-    if k:
-        G = _construct_graph_via_kNN(adata)
+    if isinstance(k, int):
+        _kNN(subset, k, metric)
+    
+    num_samples = len(subset)
+    if isinstance(k, int):
+        G = _construct_graph_via_kNN(subset)
 
     else:
-        distances = _calculate_distances(adata.X, metric)
+        distances = _calculate_distances(subset.X, metric)
         G = _construct_graph_from_distances(distances)
     matching = _match(G, num_samples)
-
-    if return_matching:
-        return _rosenbaum_test(Z=adata.obs[group_by], matching=matching, test_group=test_group), G, matching
-    return _rosenbaum_test(Z=adata.obs[group_by], matching=matching, test_group=test_group)
-
-
-
-def approximate_k(total_RAM_available_gb, num_samples):
-    """
-    Calculate the maximum number of neighbors (k) that can be used for kNN matching based on the available RAM and the number of samples.
-    The function uses the parameters from the paper.
-    Parameters:
-    ----------          
-    total_RAM_available_gb : float
-        The total available RAM in gigabytes.
-    num_samples : int
-
-        The number of samples in the dataset.
+    
+    _add_partners_to_adata(adata, subset, matching, reference, test_group)
         
-    Returns:
-    -------
-    k : int
-        An approximation of the maximum number of neighbors (k) that can be used for kNN matching.
-    """
-    k = 10**7 * (total_RAM_available_gb - 0.21) / (2.35 * num_samples)
-    return int(np.floor(k))
-    
-    
+    group_by = "XMatch_group"
+    test_group = "test"
+    return _rosenbaum_test(Z=subset.obs[group_by], matching=matching, test_group=test_group)
+
+

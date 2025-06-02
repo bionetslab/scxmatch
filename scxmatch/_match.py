@@ -115,3 +115,19 @@ def _match(G, num_samples):
     matching_list = [p for p in matching_list if ((p[0] < num_samples) and (p[1] < num_samples))]
     return matching_list
             
+
+def _add_partners_to_adata(adata, subset, matching_list, reference, test_group):
+    if reference is None:
+        ref_string = "rest"
+    else:
+        ref_string = "_".join(reference)
+    test_string = "_".join(test_group)
+    
+    adata.obs[f"XMatch_partner_{test_string}_vs_{ref_string}"] = np.nan
+    adata.obs[f"XMatch_partner_{test_string}_vs_{ref_string}"] = adata.obs[f"XMatch_partner_{test_string}_vs_{ref_string}"].astype("object")
+
+    for sample_a, sample_b in matching_list:
+        sampla_a_index = subset.obs.iloc[sample_a].name
+        sampla_b_index = subset.obs.iloc[sample_b].name
+        adata.obs.loc[sampla_a_index, f"XMatch_partner_{test_string}_vs_{ref_string}"] = sampla_b_index
+        adata.obs.loc[sampla_b_index, f"XMatch_partner_{test_string}_vs_{ref_string}"] = sampla_a_index
