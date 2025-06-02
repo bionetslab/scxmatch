@@ -1,6 +1,6 @@
 [project]
 name = "scxmatch"
-version = "0.0.2"
+version = "0.0.3"
 authors = [
   { name="Anna Moeller", email="anna.moeller@fau.de" },
 ]

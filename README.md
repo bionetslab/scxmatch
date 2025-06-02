@@ -4,6 +4,7 @@
 
 
 ![Python package Conda](https://github.com/bionetslab/scxmatch/actions/workflows/python-package-conda.yml/badge.svg)
+[![install with bioconda](https://img.shields.io/badge/install%20with-bioconda-brightgreen.svg?style=flat)](http://bioconda.github.io/recipes/scxmatch/README.html)
 
 
 
