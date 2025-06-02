@@ -54,9 +54,6 @@ scxmatch.test(
 Performs Rosenbaum’s matching-based test to determine if there is a statistically significant difference between two groups of samples using a distance-based graph matching approach.
 
 #### Parameters
-
-**Parameters:**
-
 - `adata` (`anndata.AnnData`): The input data matrix. Features should be in `adata.X`, and group labels in `adata.obs[group_by]`.
 - `group_by` (`str`): Column in `adata.obs` indicating group labels.
 - `test_group` (`str` or `list of str`): The group(s) to be tested.
@@ -81,7 +78,6 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
 
 - Modifies `adata.obs` **in-place** by adding the following columns:
   - `XMatch_partner_<test_group>_vs_<reference>`: The index of each sample’s matched partner in the MWMCM.
-
 ---
 
 ## Example Usage
