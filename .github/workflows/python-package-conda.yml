@@ -1,6 +1,9 @@
 name: Test MWE with Python 3.9-3.13
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - 'scxmatch/**'
 
 jobs:
   test-bioconda-install:
