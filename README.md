@@ -59,7 +59,7 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
 - `test_group` (`str` or `list of str`): The group(s) to be tested.
 - `reference` (`str` or `list of str`, optional): The reference group(s). If `None`, all non-test samples are used as reference.
 - `metric` (`str`, default `"sqeuclidean"`): Distance metric for matching. Follows `scipy.spatial.distance.cdist` standards.
-- `rank` (`bool`, default `True`): If `True`, features are rank-transformed before distance computation.
+- `rank` (`bool`, default `False`): If `True`, features are rank-transformed before distance computation.
 - `k` (`int`, `"auto"`, or `"full"`, default `100`): Number of nearest neighbors to use for graph construction. If `full`, a full distance matrix will be calculated.
 - `total_RAM_available_gb` (`float`, optional): Required if `k="auto"`.
   
@@ -92,12 +92,12 @@ adata = ad.read_h5ad("your_data.h5ad")
 # Run test
 p_val, z, support = scxmatch.test(
     adata=adata,
-    group_by="cell_type",
+    group_by="condition",
     test_group="treated",
     reference="control",
-    metric="euclidean",
-    rank=True,
-    k=50
+    metric="sqeuclidean",
+    rank=False,
+    k=100
 )
 
 print(f"P-value: {p_val:.4f}, Z-score: {z:.2f}, Support: {support:.2%}")
