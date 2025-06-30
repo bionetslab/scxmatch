@@ -112,7 +112,8 @@ If you use `scXMatch` in your research, please cite the original paper and our p
 > Rosenbaum, P. R. (2005). An exact distribution-free test comparing two multivariate distributions based on adjacency. *Journal of the Royal Statistical Society: Series B*, 67(4), 515–530.
 
 
-> TBD
+> Anna Moeller, Miriam Schnitzerlein, Eric Greto, Vasily Zaburdaev, Stefan Uderhardt, David B. Blumenthal. Quantifying distribution shifts in single-cell data with scXMatch.
+bioRxiv 2025.06.25.661473; doi: https://doi.org/10.1101/2025.06.25.661473
 
 ---
 
