@@ -134,7 +134,7 @@ def test_results_simulated():
     assert np.isclose(p, 0.9999999999999821, atol=1e-16), f"p value mismatch on simulated data"
     assert np.isclose(z, 6.96419413859206, atol=1e-16), f"z score mismatch on simulated data"
     assert np.isclose(s, 1.0, atol=1e-16), f"support mismatch on simulated data"
-    print(" +++++++++++++++ Successfully tested simulated data. +++++++++++++++ ")
+    print(" +++++++++++++++ Successfully tested simulated data. ++++++++++++++ ")
 
 
 def test_results_krumsiek11():
