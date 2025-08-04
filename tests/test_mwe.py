@@ -2,9 +2,9 @@ import numpy as np
 import anndata as ad
 import sys
 from scipy.spatial.distance import cdist
-
-sys.path.append("..")
 from scxmatch import *
+import scanpy as sc
+
 
 np.random.seed(42)
 
@@ -124,8 +124,43 @@ def test_added_columns(adata, group_by, test_group, reference, metric, rank, k):
     if set(adata[adata.obs["XMatch_partner_test_vs_control"].notna()].obs[group_by].unique()) != set([reference, test_group]):
         raise AssertionError("XMatch_partner_test_vs_control column does not contain expected values.")   
     
+
+def test_results_simulated():
+    data = ad.AnnData(np.linspace(0, 100, 1000).reshape(100, 10))
+    data.obs["Group"] = [0, 1] * 50
+    p, z, s = test(data, group_by="Group", test_group="test", reference="control",
+                   metric="euclidean", rank=False, k=10)
+
+    assert np.isclose(p, 0.9999999999999821, atol=1e-16), f"p value mismatch on simulated data"
+    assert np.isclose(z, 6.96419413859206, atol=1e-16), f"z score mismatch on simulated data"
+    assert np.isclose(s, 1.0, atol=1e-16), f"support mismatch on simulated data"
+    print(" +++++++++++++++ Successfully tested simulated data. +++++++++++++++ ")
+
+
+def test_results_krumsiek11():
+    adata = sc.datasets.krumsiek11()
+    p, z, s = test(adata, group_by="cell_type", test_group="Mo", reference="Ery", k=100, metric="sqeuclidean", rank=False)
+    assert np.isclose(p, 1.1679837230153187e-24, atol=1e-16), f"p value mismatch on krumsiek11 data"
+    assert np.isclose(z, -8.972174757807267, atol=1e-16), f"z score mismatch on krumsiek11 data"
+    assert np.isclose(s, 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"
+
+    p, z, s = test(adata, group_by="cell_type", test_group="Mo", reference=None, k=100, metric="sqeuclidean", rank=False)
+    assert np.isclose(p, 6.1476610170941865e-53, atol=1e-16), f"p value mismatch on krumsiek11 data"
+    assert np.isclose(z, -17.975222537080874, atol=1e-16), f"z score mismatch on krumsiek11 data"
+    assert np.isclose(s, 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
+    
+    p, z, s = test(adata, group_by="cell_type", test_group=["Mo", "Ery"], reference=["Mk", "Neu"], k=100, metric="sqeuclidean", rank=False)
+    assert np.isclose(p, 9.668885179334899e-49, atol=1e-16), f"p value mismatch on krumsiek11 data"
+    assert np.isclose(z, -12.6688586787564, atol=1e-16), f"z score mismatch on krumsiek11 data"
+    assert np.isclose(s, 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
+    print(" +++++++++++++++ Successfully tested krumsiek11 data. +++++++++++++++ ")
+    print(adata)
+
     
 def main():
+    test_results_simulated()
+    test_results_krumsiek11()
+     
     n_obs = 100
     n_var = 5
     k = 10

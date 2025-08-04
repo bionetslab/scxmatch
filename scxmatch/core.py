@@ -90,7 +90,7 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
     if reference != None:       
         for r in reference:
             if r not in adata.obs[group_by].values:
-                raise ValueError(f"the test group {t} is not contained in your data.")
+                raise ValueError(f"the reference group {r} is not contained in your data.")
         subset = adata[adata.obs[group_by].isin(test_group + reference), :].copy()
     else:
         subset = adata.copy()

@@ -23,7 +23,7 @@ def _kNN(adata, k, metric):
     print("calculating kNN graph.")
     if issparse(adata.X):
         adata.X = adata.X.toarray()  # Convert only if it's sparse
-    sc.pp.neighbors(adata, n_neighbors=k, metric=metric, n_pcs=0, transformer='pynndescent')
+    sc.pp.neighbors(adata, n_neighbors=k, metric=metric, n_pcs=0)
 
 
 
@@ -120,8 +120,9 @@ def _add_partners_to_adata(adata, subset, matching_list, reference, test_group):
     if reference is None:
         ref_string = "rest"
     else:
-        ref_string = "_".join(reference)
-    test_string = "_".join(test_group)
+        ref_string = "_".join([str(r) for r in reference])
+    
+    test_string = "_".join([str(t) for t in test_group])
     
     adata.obs[f"XMatch_partner_{test_string}_vs_{ref_string}"] = np.nan
     adata.obs[f"XMatch_partner_{test_string}_vs_{ref_string}"] = adata.obs[f"XMatch_partner_{test_string}_vs_{ref_string}"].astype("object")
