@@ -4,6 +4,8 @@ on:
   push:
     paths:
       - 'scxmatch/**'
+      - 'tests/**'
+
 
 jobs:
   test-bioconda-install:
