@@ -127,7 +127,7 @@ def test_added_columns(adata, group_by, test_group, reference, metric, rank, k):
 
 def test_results_simulated():
     data = ad.AnnData(np.linspace(0, 100, 1000).reshape(100, 10))
-    data.obs["Group"] = [0, 1] * 50
+    data.obs["Group"] = ["test", "control"] * 50
     p, z, s = test(data, group_by="Group", test_group="test", reference="control",
                    metric="euclidean", rank=False, k=10)
 
