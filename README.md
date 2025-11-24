@@ -114,7 +114,7 @@ If you use `scXMatch` in your research, please cite the original paper and our p
 
 
 > Anna Moeller, Miriam Schnitzerlein, Eric Greto, Vasily Zaburdaev, Stefan Uderhardt, David B. Blumenthal. Quantifying distribution shifts in single-cell data with scXMatch.
-bioRxiv 2025.06.25.661473; doi: https://doi.org/10.1101/2025.06.25.661473
+bioRxiv 2025.06.25.661473; doi: [https://doi.org/10.1101/2025.06.25.661473](https://doi.org/10.1101/2025.06.25.661473)
 
 ---
 
