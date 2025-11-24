@@ -86,8 +86,9 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
 import anndata as ad
 import scxmatch
 
-# Load your AnnData object
-adata = ad.read_h5ad("your_data.h5ad")
+# Load your AnnData object or load scanpy dataset
+# adata = ad.read_h5ad("your_data.h5ad")
+adata = sc.datasets.krumsiek11()
 
 # Run test
 p_val, z, support = scxmatch.test(
