@@ -86,8 +86,9 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
 import anndata as ad
 import scxmatch
 
-# Load your AnnData object
-adata = ad.read_h5ad("your_data.h5ad")
+# Load your AnnData object or load scanpy dataset
+# adata = ad.read_h5ad("your_data.h5ad")
+adata = sc.datasets.krumsiek11()
 
 # Run test
 p_val, z, support = scxmatch.test(
@@ -113,7 +114,7 @@ If you use `scXMatch` in your research, please cite the original paper and our p
 
 
 > Anna Moeller, Miriam Schnitzerlein, Eric Greto, Vasily Zaburdaev, Stefan Uderhardt, David B. Blumenthal. Quantifying distribution shifts in single-cell data with scXMatch.
-bioRxiv 2025.06.25.661473; doi: https://doi.org/10.1101/2025.06.25.661473
+bioRxiv 2025.06.25.661473; doi: [https://doi.org/10.1101/2025.06.25.661473](https://doi.org/10.1101/2025.06.25.661473)
 
 ---
 
