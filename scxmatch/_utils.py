@@ -8,6 +8,6 @@ def _approximate_k(total_RAM_available_gb, num_samples):
         raise ValueError("total_RAM_available_gb must be greater than 0.21.")
     
     k = 10**7 * (total_RAM_available_gb - 0.21) / (2.35 * num_samples)
-    return np.min([num_samples - 1, int(np.floor(k))])
+    return int(np.min([num_samples - 1, int(np.floor(k))]))
     
     
