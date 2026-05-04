@@ -5,7 +5,6 @@ from scipy.spatial.distance import cdist
 from scxmatch import *
 import scanpy as sc
 
-
 np.random.seed(42)
 
 def simulate_data(n_obs, n_var):
