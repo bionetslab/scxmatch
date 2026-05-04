@@ -29,7 +29,7 @@ jobs:
       - name: Install scxmatch and run test
         shell: bash -l {0}
         run: |
-          conda create -n test-environment -y python=${{ matrix.python-version }} scxmatch==0.0.3
+          conda create -n test-environment -y python=${{ matrix.python-version }} scxmatch
           conda activate test-environment
           python --version
           python tests/test_mwe.py
