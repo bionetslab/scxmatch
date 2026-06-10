@@ -39,7 +39,7 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
         If `True`, ranks the features in the data matrix before performing the matching. This can help reduce
         the impact of varying scales of the features on the distance computation.
     
-    k : int or str, optional, default=100
+    k : int, optional, default=100
         The number of nearest neighbors to consider for each sample. This parameter is used to limit the
         number of samples considered during the matching process, which can help reduce computational
         complexity and memory usage. If set to None, all samples are considered.
@@ -100,8 +100,8 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
         subset.X = np.apply_along_axis(rankdata, axis=0, arr=subset.X)
     
     if not isinstance(k, int):
-        if k not in ["auto", "full"]:
-            raise ValueError("k must be an integer, 'auto', or 'full'.")
+        if k is not None:
+            raise ValueError("k must be an integer or None.")
 
     if k == "auto" and total_RAM_available_gb is None:
         raise ValueError("If k is set to 'auto', total_RAM_available_gb must be provided.")
@@ -111,12 +111,6 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
     
     
     subset.obs["XMatch_group"] = np.where(subset.obs[group_by].isin(test_group), "test", "reference")
-    
-
-    
-    if k == "auto":
-        k = _approximate_k(total_RAM_available_gb, len(subset))
-        print(f"setting k to {k} based on the number of samples in the data.")
     
     if isinstance(k, int):
         _kNN(subset, k, metric)
@@ -137,3 +131,14 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
     return _rosenbaum_test(Z=subset.obs[group_by], matching=matching, test_group=test_group)
 
 
+def approximate_RAM(N, k, model="splatter"):
+    assert model in ["splatter", "gaussian"], "model must be either 'splatter' or 'gaussian'."
+    
+    if model == "splatter":
+        beta_0 = 0.1
+        beta_1 = 0.0001
+    else:
+        beta_0 = 0.01
+        beta_1 = 0.00001
+        
+    return beta_0 + beta_1 * N * k

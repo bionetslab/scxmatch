@@ -1,11 +1,11 @@
 [project]
 name = "scxmatch"
-version = "0.1.1"
+version = "0.2.0"
 authors = [
   { name="Anna Moeller", email="anna.moeller@fau.de" },
 ]
 requires-python = ">=3.9"
-description = "Python implementation for single-cell cross match test, an efficient implementation of Rosenbaum's test."
+description = "Python implementation for single-cell cross-match test."
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python",
