@@ -128,7 +128,7 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
     test_group = "test"
     
     p_value, a1, E, var, z_score, relative_support = _rosenbaum_test(Z=subset.obs[group_by], matching=matching, test_group=test_group)
-    effect_size = 1 - np.min([a1, E]) / E if E != 0 else np.nan
+    effect_strength_ratio = 1 - np.min([a1, E]) / E if E != 0 else np.nan
     
     return {
         "p_value": p_value,
@@ -136,8 +136,8 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
         "E": E,
         "var": var,
         "z_score": z_score,
-        "relative_support": relative_support,
-        "effect_size": effect_size
+        "coverage": relative_support,
+        "effect_strength_ratio": effect_strength_ratio
     }
 
 def estimate_peak_RAM_GB(N, k):  

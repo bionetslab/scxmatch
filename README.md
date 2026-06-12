@@ -64,9 +64,7 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
 - `total_RAM_available_gb` (`float`, optional): Required if `k="auto"`.
   
 #### Returns
-- `p_value` (`float`): P-value from the Rosenbaum crossmatch test.
-- `z_score` (`float`): Standardized test statistic.
-- `relative_support` (`float`): Proportion of samples included in the matching.
+- `result` (`dictionary`): Dictionary containing the P-value, the number of cross matches a1, the expected value of A1, the variance of A1, the z-score, the matching coverage, and the effect strength ratio. 
 
 #### Raises
 - `TypeError`: If the input `adata` is not an `AnnData` object.
@@ -91,7 +89,7 @@ import scxmatch
 adata = sc.datasets.krumsiek11()
 
 # Run test
-p_val, z, support = scxmatch.test(
+result = xm.test(
     adata=adata,
     group_by="condition",
     test_group="treated",
@@ -101,7 +99,7 @@ p_val, z, support = scxmatch.test(
     k=100
 )
 
-print(f"P-value: {p_val:.4f}, Z-score: {z:.2f}, Support: {support:.2%}")
+print(f"P-value: {result["p_value"]:.4f}, Z-score: {result["z_score"]:.2f}, Coverage: {result["coverage"]:.2%}")
 ```
 
 ---
