@@ -5,8 +5,6 @@ import warnings
 
 from ._match import _kNN, _calculate_distances, _extract_matching, _construct_graph_via_kNN, _construct_graph_from_distances, _match, _add_partners_to_adata
 from ._count import _cross_match_count, _get_p_value, _get_z_score, _get_relative_support, _rosenbaum_test
-from ._utils import _approximate_k
-
 
 def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank=False, k=100, total_RAM_available_gb=None):
     """
@@ -128,17 +126,28 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
         
     group_by = "XMatch_group"
     test_group = "test"
-    return _rosenbaum_test(Z=subset.obs[group_by], matching=matching, test_group=test_group)
-
-
-def approximate_RAM(N, k, model="splatter"):
-    assert model in ["splatter", "gaussian"], "model must be either 'splatter' or 'gaussian'."
     
-    if model == "splatter":
-        beta_0 = 0.1
-        beta_1 = 0.0001
-    else:
-        beta_0 = 0.01
-        beta_1 = 0.00001
-        
+    p_value, a1, E, var, z_score, relative_support = _rosenbaum_test(Z=subset.obs[group_by], matching=matching, test_group=test_group)
+    effect_size = 1 - np.min([a1, E]) / E if E != 0 else np.nan
+    
+    return {
+        "p_value": p_value,
+        "a1": a1,
+        "E": E,
+        "var": var,
+        "z_score": z_score,
+        "relative_support": relative_support,
+        "effect_size": effect_size
+    }
+
+def estimate_peak_RAM_GB(N, k):  
+    if N <= 0:
+        raise ValueError("N must be a positive integer.")
+    if k <= 0:
+        raise ValueError("k must be a positive integer.")
+    if k >= N:
+        raise ValueError("k must be less than N.")
+
+    beta_0 = 1.9611825714677176
+    beta_1 = 1.368252352453625e-07
     return beta_0 + beta_1 * N * k

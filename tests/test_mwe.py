@@ -79,25 +79,10 @@ def test_rank(adata, group_by, test_group, reference, k, metric):
         test(adata, group_by=group_by, test_group=test_group, reference=reference,
                  metric=metric, rank=rank, k=k)
     print(" +++++++++++++++ Successfully worked for ranked and original values. +++++++++++++++ ")
-
-
-def test_auto_k(adata, group_by, test_group, reference, rank):        
-    test(adata, group_by=group_by, test_group=test_group, reference=reference, rank=rank, k="auto", total_RAM_available_gb=16)
-    
-    try:
-        test(adata, group_by=group_by, test_group=test_group, reference=reference, rank=rank, k="auto", total_RAM_available_gb=0.1)
-    except ValueError:
-        print(" +++++++++++++++ Successfully threw ValueError for RAM under 0.21. +++++++++++++++ ")
-        try:
-            test(adata, group_by=group_by, test_group=test_group, reference=reference, rank=rank, k="auto", total_RAM_available_gb=-10)
-        except ValueError:
-            print(" +++++++++++++++ Successfully threw ValueError for negative RAM. +++++++++++++++ ")
-            return
-    raise AssertionError("ValueError not raised for RAM under 0.21 or negative RAM.")
     
 
 def test_k(adata, group_by, test_group, reference, metric, rank):
-    for k in [10, "auto", "full"]:
+    for k in [10, None]:
         test(adata, group_by=group_by, test_group=test_group, reference=reference,
             metric=metric, rank=rank, k=k, total_RAM_available_gb=15)
     try:
@@ -127,35 +112,59 @@ def test_added_columns(adata, group_by, test_group, reference, metric, rank, k):
 def test_results_simulated():
     data = ad.AnnData(np.linspace(0, 100, 1000).reshape(100, 10))
     data.obs["Group"] = ["test", "control"] * 50
-    p, z, s = test(data, group_by="Group", test_group="test", reference="control",
+    result = test(data, group_by="Group", test_group="test", reference="control",
                    metric="euclidean", rank=False, k=10)
 
-    assert np.isclose(p, 0.9999999999999821, atol=1e-16), f"p value mismatch on simulated data"
-    assert np.isclose(z, 6.96419413859206, atol=1e-16), f"z score mismatch on simulated data"
-    assert np.isclose(s, 1.0, atol=1e-16), f"support mismatch on simulated data"
+    assert np.isclose(result["p_value"], 0.9999999999999821, atol=1e-16), f"p value mismatch on simulated data"
+    assert np.isclose(result["z_score"], 6.96419413859206, atol=1e-16), f"z score mismatch on simulated data"
+    assert np.isclose(result["relative_support"], 1.0, atol=1e-16), f"support mismatch on simulated data"
     print(" +++++++++++++++ Successfully tested simulated data. ++++++++++++++ ")
 
 
 def test_results_krumsiek11():
     adata = sc.datasets.krumsiek11()
-    p, z, s = test(adata, group_by="cell_type", test_group="Mo", reference="Ery", k=100, metric="sqeuclidean", rank=False)
-    assert np.isclose(p, 1.1679837230153187e-24, atol=1e-16), f"p value mismatch on krumsiek11 data"
-    assert np.isclose(z, -8.972174757807267, atol=1e-16), f"z score mismatch on krumsiek11 data"
-    assert np.isclose(s, 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"
+    result = test(adata, group_by="cell_type", test_group="Mo", reference="Ery", k=100, metric="sqeuclidean", rank=False)
+    assert np.isclose(result["p_value"], 1.1679837230153187e-24, atol=1e-16), f"p value mismatch on krumsiek11 data"
+    assert np.isclose(result["z_score"], -8.972174757807267, atol=1e-16), f"z score mismatch on krumsiek11 data"
+    assert np.isclose(result["relative_support"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"
 
-    p, z, s = test(adata, group_by="cell_type", test_group="Mo", reference=None, k=100, metric="sqeuclidean", rank=False)
-    assert np.isclose(p, 6.1476610170941865e-53, atol=1e-16), f"p value mismatch on krumsiek11 data"
-    assert np.isclose(z, -17.975222537080874, atol=1e-16), f"z score mismatch on krumsiek11 data"
-    assert np.isclose(s, 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
+    result = test(adata, group_by="cell_type", test_group="Mo", reference=None, k=100, metric="sqeuclidean", rank=False)
+    assert np.isclose(result["p_value"], 6.1476610170941865e-53, atol=1e-16), f"p value mismatch on krumsiek11 data"
+    assert np.isclose(result["z_score"], -17.975222537080874, atol=1e-16), f"z score mismatch on krumsiek11 data"
+    assert np.isclose(result["relative_support"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
     
-    p, z, s = test(adata, group_by="cell_type", test_group=["Mo", "Ery"], reference=["Mk", "Neu"], k=100, metric="sqeuclidean", rank=False)
-    assert np.isclose(p, 9.668885179334899e-49, atol=1e-16), f"p value mismatch on krumsiek11 data"
-    assert np.isclose(z, -12.6688586787564, atol=1e-16), f"z score mismatch on krumsiek11 data"
-    assert np.isclose(s, 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
+    result = test(adata, group_by="cell_type", test_group=["Mo", "Ery"], reference=["Mk", "Neu"], k=100, metric="sqeuclidean", rank=False)
+    assert np.isclose(result["p_value"], 9.668885179334899e-49, atol=1e-16), f"p value mismatch on krumsiek11 data"
+    assert np.isclose(result["z_score"], -12.6688586787564, atol=1e-16), f"z score mismatch on krumsiek11 data"
+    assert np.isclose(result["relative_support"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
     print(" +++++++++++++++ Successfully tested krumsiek11 data. +++++++++++++++ ")
     print(adata)
 
+
+def test_approximate_ram():
+    estimated_RAM = estimate_peak_RAM_GB(N=1000, k=100)
+    assert estimated_RAM == 1.974865094992254, f"Estimated RAM does not match expected value. Got {estimated_RAM}."
+    print(" +++++++++++++++ Successfully tested RAM estimation. +++++++++++++++ ")
     
+    try:
+        estimate_peak_RAM_GB(N=1000, k=1000)
+    except ValueError:
+        print(" +++++++++++++++ Successfully threw ValueError for k >= N. +++++++++++++++ ")
+        try:
+            estimate_peak_RAM_GB(N=-1, k=10)
+        except ValueError:
+            print(" +++++++++++++++ Successfully threw ValueError for negative N. +++++++++++++++ ")
+            try:
+                estimate_peak_RAM_GB(N=1000, k=-5)
+            except ValueError:
+                print(" +++++++++++++++ Successfully threw ValueError for negative k. +++++++++++++++ ")
+                return
+            raise AssertionError("ValueError not raised for invalid k.")
+        raise AssertionError("ValueError not raised for invalid N.")
+    raise AssertionError("ValueError not raised for k >= N.")
+
+
+
 def main():
     test_results_simulated()
     test_results_krumsiek11()
@@ -180,9 +189,9 @@ def main():
     test_reference(adata, group_by, test_group, test_group_2, reference, metric, rank, k)
     test_metrics(adata, group_by, test_group, reference, k, rank)
     test_rank(adata, group_by, test_group, reference, k, metric)
-    test_auto_k(adata, group_by, test_group, reference, rank)    
     test_k(adata, group_by, test_group, reference, metric, rank)
     test_added_columns(adata, group_by, test_group, reference, metric, rank, k)
+    test_approximate_ram()
     print("All tests passed successfully!")
     
     

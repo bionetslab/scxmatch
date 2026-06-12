@@ -38,7 +38,7 @@ def _get_z_score(a1, n, N):
     E = n * m / (N - 1) # Eq. 3 in Rosenbaum paper
     var = 2 * n * (n - 1) * m * (m - 1) / ((N - 3) * (N - 1)**2)
     z = (a1 - E) / np.sqrt(var)
-    return z
+    return E, var, z
 
 
 def _get_relative_support(N, Z):
@@ -54,7 +54,7 @@ def _rosenbaum_test(Z, matching, test_group):
     a1 = _cross_match_count(Z, matching, test_group)
     
     p_value = _get_p_value(a1, n, N, I)
-    z_score = _get_z_score(a1, n, N)
+    E, var, z_score = _get_z_score(a1, n, N)
     relative_support = _get_relative_support(N, Z)
-    return p_value, z_score, relative_support
+    return p_value, a1, E, var, z_score, relative_support
 
