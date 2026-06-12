@@ -78,6 +78,30 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
   - `XMatch_partner_<test_group>_vs_<reference>`: The index of each sample’s matched partner in the MWMCM.
 ---
 
+### `scxmatch.estimate_peak_RAM_GB`
+
+```python
+scxmatch.estimate_peak_RAM_GB(
+    N, 
+    k
+)
+```
+
+#### Description
+
+Estimates the worst-case peak RAM usage of a test run with k on an anndata with N samples.
+
+#### Parameters
+- `N` (`int`): Number of samples in anndata file.
+- `k` (`int`): Number of nearest neighbors to use for graph construction. 
+  
+#### Returns
+- `peak_ram_gb` (`float`): The expected worst-case peak RAM in gigabytes.
+
+#### Raises
+- `ValueError`: For invalid (negative) `N` or `k`.
+
+
 ## Example Usage
 
 ```python
