@@ -5,6 +5,7 @@ on:
     paths:
       - 'scxmatch/**'
       - 'tests/**'
+      -'.github/workflows/'
 
 
 jobs:
@@ -26,10 +27,17 @@ jobs:
           channels: conda-forge, bioconda
           auto-activate-base: true
 
-      - name: Install scxmatch and run test
+      - name: Install dependencies and run test
         shell: bash -l {0}
         run: |
-          conda create -n test-environment -y python=${{ matrix.python-version }} scxmatch
+          conda create -n test-environment -y python=${{ matrix.python-version }}
           conda activate test-environment
+      
+          # Install graph-tool from conda
+          conda install -y -c conda-forge graph-tool
+      
+          # Install your package and all pyproject.toml dependencies
+          pip install .
+      
           python --version
           python tests/test_mwe.py
