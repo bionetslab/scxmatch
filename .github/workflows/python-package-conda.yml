@@ -5,7 +5,7 @@ on:
     paths:
       - 'scxmatch/**'
       - 'tests/**'
-      -'.github/workflows/'
+      - '.github/workflows/**'
 
 
 jobs:
