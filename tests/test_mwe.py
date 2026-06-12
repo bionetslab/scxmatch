@@ -117,7 +117,7 @@ def test_results_simulated():
 
     assert np.isclose(result["p_value"], 0.9999999999999821, atol=1e-16), f"p value mismatch on simulated data"
     assert np.isclose(result["z_score"], 6.96419413859206, atol=1e-16), f"z score mismatch on simulated data"
-    assert np.isclose(result["relative_support"], 1.0, atol=1e-16), f"support mismatch on simulated data"
+    assert np.isclose(result["coverage"], 1.0, atol=1e-16), f"support mismatch on simulated data"
     print(" +++++++++++++++ Successfully tested simulated data. ++++++++++++++ ")
 
 
@@ -126,17 +126,17 @@ def test_results_krumsiek11():
     result = test(adata, group_by="cell_type", test_group="Mo", reference="Ery", k=100, metric="sqeuclidean", rank=False)
     assert np.isclose(result["p_value"], 1.1679837230153187e-24, atol=1e-16), f"p value mismatch on krumsiek11 data"
     assert np.isclose(result["z_score"], -8.972174757807267, atol=1e-16), f"z score mismatch on krumsiek11 data"
-    assert np.isclose(result["relative_support"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"
+    assert np.isclose(result["coverage"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"
 
     result = test(adata, group_by="cell_type", test_group="Mo", reference=None, k=100, metric="sqeuclidean", rank=False)
     assert np.isclose(result["p_value"], 6.1476610170941865e-53, atol=1e-16), f"p value mismatch on krumsiek11 data"
     assert np.isclose(result["z_score"], -17.975222537080874, atol=1e-16), f"z score mismatch on krumsiek11 data"
-    assert np.isclose(result["relative_support"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
+    assert np.isclose(result["coverage"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
     
     result = test(adata, group_by="cell_type", test_group=["Mo", "Ery"], reference=["Mk", "Neu"], k=100, metric="sqeuclidean", rank=False)
     assert np.isclose(result["p_value"], 9.668885179334899e-49, atol=1e-16), f"p value mismatch on krumsiek11 data"
     assert np.isclose(result["z_score"], -12.6688586787564, atol=1e-16), f"z score mismatch on krumsiek11 data"
-    assert np.isclose(result["relative_support"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
+    assert np.isclose(result["coverage"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
     print(" +++++++++++++++ Successfully tested krumsiek11 data. +++++++++++++++ ")
     print(adata)
 
