@@ -44,8 +44,7 @@ scxmatch.test(
     reference=None,
     metric="sqeuclidean",
     rank=False,
-    k=100,
-    total_RAM_available_gb=None
+    k=100
 )
 ```
 
@@ -60,8 +59,7 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
 - `reference` (`str` or `list of str`, optional): The reference group(s). If `None`, all non-test samples are used as reference.
 - `metric` (`str`, default `"sqeuclidean"`): Distance metric for matching. Follows `scipy.spatial.distance.cdist` standards.
 - `rank` (`bool`, default `False`): If `True`, features are rank-transformed before distance computation.
-- `k` (`int`, `"auto"`, or `"full"`, default `100`): Number of nearest neighbors to use for graph construction. If `full`, a full distance matrix will be calculated.
-- `total_RAM_available_gb` (`float`, optional): Required if `k="auto"`.
+- `k` (`int` or `None`, default `100`): Number of nearest neighbors to use for graph construction. If `None`, a full distance matrix is used.
   
 #### Returns
 - `result` (`dictionary`): Dictionary containing the P-value, the number of cross matches a1, the expected value of A1, the variance of A1, the z-score, the matching coverage, and the effect strength ratio. 
@@ -69,8 +67,7 @@ Performs Rosenbaum’s matching-based test to determine if there is a statistica
 #### Raises
 - `TypeError`: If the input `adata` is not an `AnnData` object.
 - `ValueError`: If `test_group` or `reference` contains values not present in `adata.obs[group_by]`.
-- `ValueError`: If `k="auto"` and `total_RAM_available_gb` is not provided.
-- `ValueError`: If `k` is not an integer, `"auto"`, or `"full"`.
+- `ValueError`: If `k` is not an integer or `None`.
 
 #### Modifies:
 
