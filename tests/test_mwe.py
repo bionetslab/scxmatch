@@ -1,199 +1,139 @@
-import numpy as np
-import anndata as ad
-import sys
-from scipy.spatial.distance import cdist
-from scxmatch import *
+import pytest
 import scanpy as sc
 
-np.random.seed(42)
-
-def simulate_data(n_obs, n_var):
-    samples = [np.random.normal(0, 1, n_var) for _ in range(n_obs)]
-    adata = ad.AnnData(np.array(samples))
-    return adata
+from scxmatch import test, estimate_peak_RAM_GB
 
 
-def test_group_by(adata, test_group, reference, metric, rank, k):
-    try:
-        test(adata, group_by="foo", test_group=test_group, reference=reference,
-             metric=metric, rank=rank, k=k)
-    except KeyError:
-        print(" +++++++++++++++ Successfully threw KeyError for invalid group_by. +++++++++++++++ ")
-        return
-    raise AssertionError("KeyError not raised for invalid group_by.")
+# ── input validation ──────────────────────────────────────────────────────────
+
+def test_invalid_group_by(adata):
+    with pytest.raises(KeyError):
+        test(adata, group_by="foo", test_group="test", reference="control", k=10)
 
 
-def test_test_group(adata, group_by, test_group, test_group_2, reference, metric, rank, k):
-    test(adata, group_by=group_by, test_group=test_group, reference=reference,
-        metric=metric, rank=rank, k=k)
-    print(" +++++++++++++++ Successfully worked with single group as test_group. +++++++++++++++ ")
-    
-    test(adata, group_by=group_by, test_group=[test_group, test_group_2], reference=reference,
-        metric=metric, rank=rank, k=k)
-    print(" +++++++++++++++ Successfully worked with list as test_group. +++++++++++++++ ")
-
-    try:
-        test(adata, group_by=group_by, test_group="foo", reference=reference,
-             metric=metric, rank=rank, k=k)
-    except ValueError:
-        print(" +++++++++++++++ Successfully threw ValueError for invalid test_group. +++++++++++++++ ")
-        return
-    raise AssertionError("KeyError not raised for invalid test_group.")
+def test_single_test_group(adata):
+    test(adata, group_by="Group", test_group="test", reference="control", k=10)
 
 
-def test_reference(adata, group_by, test_group, test_group_2, reference, metric, rank, k):
-    test(adata, group_by=group_by, test_group=test_group, reference=reference,
-        metric=metric, rank=rank, k=k)
-    print(" +++++++++++++++ Successfully worked with single group as reference. +++++++++++++++ ")
-    
-    test(adata, group_by=group_by, test_group=test_group, reference=[reference, test_group_2],
-        metric=metric, rank=rank, k=k)
-    print(" +++++++++++++++ Successfully worked with list as test_group. +++++++++++++++ ")
-
-    try:
-        test(adata, group_by=group_by, test_group=test_group, reference="foo",
-             metric=metric, rank=rank, k=k)
-    except ValueError:
-        print(" +++++++++++++++ Successfully threw ValueError for invalid reference. +++++++++++++++ ")
-        return
-    raise AssertionError("KeyError not raised for invalid test_group.")
+def test_list_test_group(adata):
+    test(adata, group_by="Group", test_group=["test", "test_2"], reference="control", k=10)
 
 
-def test_metrics(adata, group_by, test_group, reference, k, rank):
-    metrics = ["euclidean", "sqeuclidean", "jaccard"]
-    for metric in metrics:
-        print(f"Testing metric: {metric}")
-        test(adata, group_by=group_by, test_group=test_group, reference=reference,
-             metric=metric, rank=rank, k=k)
-    try:
-        test(adata, group_by=group_by, test_group=test_group, reference=reference,
-             metric="foo", rank=rank, k=k)
-    except ValueError:
-        print(" +++++++++++++++ Successfully threw ValueError for invalid metric. +++++++++++++++ ")
-        return
-    raise AssertionError("ValueError not raised for invalid metric.")
+def test_invalid_test_group(adata):
+    with pytest.raises(ValueError):
+        test(adata, group_by="Group", test_group="foo", reference="control", k=10)
 
 
-def test_rank(adata, group_by, test_group, reference, k, metric):
-    for rank in [False, True]:
-        test(adata, group_by=group_by, test_group=test_group, reference=reference,
-                 metric=metric, rank=rank, k=k)
-    print(" +++++++++++++++ Successfully worked for ranked and original values. +++++++++++++++ ")
-    
-
-def test_k(adata, group_by, test_group, reference, metric, rank):
-    for k in [10, None]:
-        test(adata, group_by=group_by, test_group=test_group, reference=reference,
-            metric=metric, rank=rank, k=k, total_RAM_available_gb=15)
-    try:
-        test(adata, group_by=group_by, test_group=test_group, reference=reference,
-            metric=metric, rank=rank, k="foo")    
-    except ValueError:
-        print(" +++++++++++++++ Successfully threw ValueError for invalid k. +++++++++++++++ ")
-        try:
-            test(adata, group_by=group_by, test_group=test_group, reference=reference,
-                 metric=metric, rank=rank, k=-1.5)
-        except ValueError:
-            print(" +++++++++++++++ Successfully threw ValueError for negative k. +++++++++++++++ ")
-            return
-        return      
-    raise AssertionError("ValueError not raised for invalid k.")
-        
-        
-def test_added_columns(adata, group_by, test_group, reference, metric, rank, k):
-    test(adata, group_by=group_by, test_group=test_group, reference=reference,
-            metric=metric, rank=rank, k=k)
-    if "XMatch_partner_test_vs_control" not in adata.obs.columns:
-        raise AssertionError("XMatch_partner_test_vs_control column not added to adata.obs.")
-    if set(adata[adata.obs["XMatch_partner_test_vs_control"].notna()].obs[group_by].unique()) != set([reference, test_group]):
-        raise AssertionError("XMatch_partner_test_vs_control column does not contain expected values.")   
-    
-
-def test_results_simulated():
-    data = ad.AnnData(np.linspace(0, 100, 1000).reshape(100, 10))
-    data.obs["Group"] = ["test", "control"] * 50
-    result = test(data, group_by="Group", test_group="test", reference="control",
-                   metric="euclidean", rank=False, k=10)
-
-    assert np.isclose(result["p_value"], 0.9999999999999821, atol=1e-16), f"p value mismatch on simulated data"
-    assert np.isclose(result["z_score"], 6.96419413859206, atol=1e-16), f"z score mismatch on simulated data"
-    assert np.isclose(result["coverage"], 1.0, atol=1e-16), f"support mismatch on simulated data"
-    print(" +++++++++++++++ Successfully tested simulated data. ++++++++++++++ ")
+def test_single_reference(adata):
+    test(adata, group_by="Group", test_group="test", reference="control", k=10)
 
 
-def test_results_krumsiek11():
+def test_list_reference(adata):
+    test(adata, group_by="Group", test_group="test", reference=["control", "test_2"], k=10)
+
+
+def test_invalid_reference(adata):
+    with pytest.raises(ValueError):
+        test(adata, group_by="Group", test_group="test", reference="foo", k=10)
+
+
+@pytest.mark.parametrize("metric", ["euclidean", "sqeuclidean", "jaccard"])
+def test_valid_metric(adata, metric):
+    test(adata, group_by="Group", test_group="test", reference="control", metric=metric, k=10)
+
+
+def test_invalid_metric(adata):
+    with pytest.raises(ValueError):
+        test(adata, group_by="Group", test_group="test", reference="control", metric="foo", k=10)
+
+
+@pytest.mark.parametrize("rank", [False, True])
+def test_rank_parameter(adata, rank):
+    test(adata, group_by="Group", test_group="test", reference="control", rank=rank, k=10)
+
+
+@pytest.mark.parametrize("k", [10, None])
+def test_k_parameter(adata, k):
+    test(adata, group_by="Group", test_group="test", reference="control",
+         k=k, total_RAM_available_gb=15)
+
+
+def test_invalid_k_type(adata):
+    with pytest.raises(ValueError):
+        test(adata, group_by="Group", test_group="test", reference="control", k="foo")
+
+
+def test_invalid_k_negative(adata):
+    with pytest.raises(ValueError):
+        test(adata, group_by="Group", test_group="test", reference="control", k=-1.5)
+
+
+# ── output structure ──────────────────────────────────────────────────────────
+
+def test_partner_column_added(adata):
+    test(adata, group_by="Group", test_group="test", reference="control", k=10)
+    assert "XMatch_partner_test_vs_control" in adata.obs.columns
+
+
+def test_partner_column_groups(adata):
+    test(adata, group_by="Group", test_group="test", reference="control", k=10)
+    matched = adata[adata.obs["XMatch_partner_test_vs_control"].notna()]
+    assert set(matched.obs["Group"].unique()) == {"test", "control"}
+
+
+# ── numerical results ─────────────────────────────────────────────────────────
+
+def test_results_simulated(linspace_adata):
+    result = test(linspace_adata, group_by="Group", test_group="test", reference="control",
+                  metric="euclidean", rank=False, k=10)
+    assert result["p_value"] == pytest.approx(0.9999999999999821, abs=1e-12)
+    assert result["z_score"] == pytest.approx(6.96419413859206, rel=1e-6)
+    assert result["coverage"] == pytest.approx(1.0)
+
+
+@pytest.mark.slow
+def test_results_krumsiek11_paired():
     adata = sc.datasets.krumsiek11()
-    result = test(adata, group_by="cell_type", test_group="Mo", reference="Ery", k=100, metric="sqeuclidean", rank=False)
-    assert np.isclose(result["p_value"], 1.1679837230153187e-24, atol=1e-16), f"p value mismatch on krumsiek11 data"
-    assert np.isclose(result["z_score"], -8.972174757807267, atol=1e-16), f"z score mismatch on krumsiek11 data"
-    assert np.isclose(result["coverage"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"
-
-    result = test(adata, group_by="cell_type", test_group="Mo", reference=None, k=100, metric="sqeuclidean", rank=False)
-    assert np.isclose(result["p_value"], 6.1476610170941865e-53, atol=1e-16), f"p value mismatch on krumsiek11 data"
-    assert np.isclose(result["z_score"], -17.975222537080874, atol=1e-16), f"z score mismatch on krumsiek11 data"
-    assert np.isclose(result["coverage"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
-    
-    result = test(adata, group_by="cell_type", test_group=["Mo", "Ery"], reference=["Mk", "Neu"], k=100, metric="sqeuclidean", rank=False)
-    assert np.isclose(result["p_value"], 9.668885179334899e-49, atol=1e-16), f"p value mismatch on krumsiek11 data"
-    assert np.isclose(result["z_score"], -12.6688586787564, atol=1e-16), f"z score mismatch on krumsiek11 data"
-    assert np.isclose(result["coverage"], 1.0, atol=1e-16), f"support mismatch on krumsiek11 data"    
-    print(" +++++++++++++++ Successfully tested krumsiek11 data. +++++++++++++++ ")
-    print(adata)
+    result = test(adata, group_by="cell_type", test_group="Mo", reference="Ery",
+                  k=100, metric="sqeuclidean", rank=False)
+    assert result["p_value"] == pytest.approx(1.1679837230153187e-24, rel=1e-6)
+    assert result["z_score"] == pytest.approx(-8.972174757807267, rel=1e-6)
+    assert result["coverage"] == pytest.approx(1.0)
 
 
-def test_approximate_ram():
-    estimated_RAM = estimate_peak_RAM_GB(N=1000, k=100)
-    assert estimated_RAM == 1.974865094992254, f"Estimated RAM does not match expected value. Got {estimated_RAM}."
-    print(" +++++++++++++++ Successfully tested RAM estimation. +++++++++++++++ ")
-    
-    try:
-        estimate_peak_RAM_GB(N=1000, k=1000)
-    except ValueError:
-        print(" +++++++++++++++ Successfully threw ValueError for k >= N. +++++++++++++++ ")
-        try:
-            estimate_peak_RAM_GB(N=-1, k=10)
-        except ValueError:
-            print(" +++++++++++++++ Successfully threw ValueError for negative N. +++++++++++++++ ")
-            try:
-                estimate_peak_RAM_GB(N=1000, k=-5)
-            except ValueError:
-                print(" +++++++++++++++ Successfully threw ValueError for negative k. +++++++++++++++ ")
-                return
-            raise AssertionError("ValueError not raised for invalid k.")
-        raise AssertionError("ValueError not raised for invalid N.")
-    raise AssertionError("ValueError not raised for k >= N.")
+@pytest.mark.slow
+def test_results_krumsiek11_vs_rest():
+    adata = sc.datasets.krumsiek11()
+    result = test(adata, group_by="cell_type", test_group="Mo", reference=None,
+                  k=100, metric="sqeuclidean", rank=False)
+    assert result["p_value"] == pytest.approx(6.1476610170941865e-53, rel=1e-6)
+    assert result["z_score"] == pytest.approx(-17.975222537080874, rel=1e-6)
+    assert result["coverage"] == pytest.approx(1.0)
 
 
+@pytest.mark.slow
+def test_results_krumsiek11_multigroup():
+    adata = sc.datasets.krumsiek11()
+    result = test(adata, group_by="cell_type", test_group=["Mo", "Ery"],
+                  reference=["Mk", "Neu"], k=100, metric="sqeuclidean", rank=False)
+    assert result["p_value"] == pytest.approx(9.668885179334899e-49, rel=1e-6)
+    assert result["z_score"] == pytest.approx(-12.6688586787564, rel=1e-6)
+    assert result["coverage"] == pytest.approx(1.0)
 
-def main():
-    test_results_simulated()
-    test_results_krumsiek11()
-     
-    n_obs = 100
-    n_var = 5
-    k = 10
-    group_by = "Group"
-    reference = "control"
-    test_group = "test"
-    test_group_2 = "test_2"
 
-    metric = "euclidean"
-    rank = False
+# ── estimate_peak_RAM_GB ──────────────────────────────────────────────────────
 
-    adata = simulate_data(n_obs, n_var)
-    adata.obs[group_by] = np.random.choice([reference, test_group, test_group_2], size=n_obs)
+def test_ram_estimate_value():
+    assert estimate_peak_RAM_GB(N=1000, k=100) == pytest.approx(1.974865094992254)
 
-    # Individual tests
-    test_group_by(adata, test_group, reference, metric, rank, k)
-    test_test_group(adata, group_by, test_group, test_group_2, reference, metric, rank, k)
-    test_reference(adata, group_by, test_group, test_group_2, reference, metric, rank, k)
-    test_metrics(adata, group_by, test_group, reference, k, rank)
-    test_rank(adata, group_by, test_group, reference, k, metric)
-    test_k(adata, group_by, test_group, reference, metric, rank)
-    test_added_columns(adata, group_by, test_group, reference, metric, rank, k)
-    test_approximate_ram()
-    print("All tests passed successfully!")
-    
-    
-if __name__ == "__main__":
-    main()
+
+@pytest.mark.parametrize("kwargs,exc", [
+    ({"N": 1000, "k": 1000}, ValueError),  # k >= N
+    ({"N": -1,   "k": 10},   ValueError),  # negative N
+    ({"N": 0,    "k": 10},   ValueError),  # zero N
+    ({"N": 1000, "k": -5},   ValueError),  # negative k
+    ({"N": 1000, "k": 0},    ValueError),  # zero k
+])
+def test_ram_estimate_invalid_inputs(kwargs, exc):
+    with pytest.raises(exc):
+        estimate_peak_RAM_GB(**kwargs)
