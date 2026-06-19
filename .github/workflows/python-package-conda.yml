@@ -1,42 +1,45 @@
-name: Test MWE with Python 3.9-3.13
+name: CI
 
 on:
   push:
     paths:
       - 'scxmatch/**'
       - 'tests/**'
+      - 'pyproject.toml'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - 'scxmatch/**'
+      - 'tests/**'
+      - 'pyproject.toml'
       - '.github/workflows/**'
 
-
 jobs:
-  test-bioconda-install:
+  test:
     runs-on: ubuntu-latest
 
     strategy:
+      fail-fast: false
       matrix:
         python-version: ["3.9", "3.10", "3.11", "3.12", "3.13"]
 
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v2
+      - uses: actions/checkout@v4
 
-      - name: Set up Miniconda
-        uses: conda-incubator/setup-miniconda@v2
+      - name: Set up Micromamba
+        uses: mamba-org/setup-micromamba@v2
         with:
-          miniconda-version: 'latest'
-          channels: conda-forge, bioconda
-          auto-activate-base: true
+          environment-name: test-env
+          create-args: >-
+            python=${{ matrix.python-version }}
+            graph-tool
+          channels: conda-forge
+          cache-environment: true
 
-      - name: Install dependencies and run test
-        shell: bash -l {0}
-        run: |
-          conda create -n test-environment -y \
-            python=${{ matrix.python-version }} \
-            pip
-      
-          conda install -n test-environment -y -c conda-forge graph-tool
-      
-          conda run -n test-environment python -m pip install --upgrade pip
-          conda run -n test-environment python -m pip install .
-      
-          conda run -n test-environment python tests/test_mwe.py
+      - name: Install package with test dependencies
+        shell: bash -el {0}
+        run: pip install -e ".[test]"
+
+      - name: Run tests
+        shell: bash -el {0}
+        run: pytest -m "not slow"
