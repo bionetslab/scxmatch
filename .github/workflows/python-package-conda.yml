@@ -5,6 +5,7 @@ on:
     paths:
       - 'scxmatch/**'
       - 'tests/**'
+      - '.github/workflows/**'
 
 
 jobs:
@@ -26,10 +27,16 @@ jobs:
           channels: conda-forge, bioconda
           auto-activate-base: true
 
-      - name: Install scxmatch and run test
+      - name: Install dependencies and run test
         shell: bash -l {0}
         run: |
-          conda create -n test-environment -y python=${{ matrix.python-version }} scxmatch
-          conda activate test-environment
-          python --version
-          python tests/test_mwe.py
+          conda create -n test-environment -y \
+            python=${{ matrix.python-version }} \
+            pip
+      
+          conda install -n test-environment -y -c conda-forge graph-tool
+      
+          conda run -n test-environment python -m pip install --upgrade pip
+          conda run -n test-environment python -m pip install .
+      
+          conda run -n test-environment python tests/test_mwe.py
