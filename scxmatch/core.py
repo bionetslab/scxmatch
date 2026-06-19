@@ -33,7 +33,7 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
         The distance metric used for calculating distances between the samples during the matching process. 
         It can be any valid metric recognized by `scipy.spatial.distance.cdist`.
 
-    rank : bool, optional, default=True
+    rank : bool, optional, default=False
         If `True`, ranks the features in the data matrix before performing the matching. This can help reduce
         the impact of varying scales of the features on the distance computation.
     
