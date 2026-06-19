@@ -54,8 +54,7 @@ def test_rank_parameter(adata, rank):
 
 @pytest.mark.parametrize("k", [10, None])
 def test_k_parameter(adata, k):
-    test(adata, group_by="Group", test_group="test", reference="control",
-         k=k, total_RAM_available_gb=15)
+    test(adata, group_by="Group", test_group="test", reference="control", k=k)
 
 
 def test_invalid_k_type(adata):
@@ -66,6 +65,14 @@ def test_invalid_k_type(adata):
 def test_invalid_k_negative(adata):
     with pytest.raises(ValueError):
         test(adata, group_by="Group", test_group="test", reference="control", k=-1.5)
+
+
+# ── warnings ─────────────────────────────────────────────────────────────────
+
+def test_view_input_warns(adata):
+    view = adata[adata.obs["Group"].isin(["test", "control"])]
+    with pytest.warns(UserWarning, match="view"):
+        test(view, group_by="Group", test_group="test", reference="control", k=10)
 
 
 # ── output structure ──────────────────────────────────────────────────────────

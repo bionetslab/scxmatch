@@ -6,7 +6,7 @@ import warnings
 from ._match import _kNN, _calculate_distances, _extract_matching, _construct_graph_via_kNN, _construct_graph_from_distances, _match, _add_partners_to_adata
 from ._count import _cross_match_count, _get_p_value, _get_z_score, _get_relative_support, _rosenbaum_test
 
-def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank=False, k=100, total_RAM_available_gb=None):
+def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank=False, k=100):
     """
     Perform Rosenbaum's matching-based test for checking the association between two groups 
     using a distance-based matching approach.
@@ -100,14 +100,7 @@ def test(adata, group_by, test_group, reference=None, metric="sqeuclidean", rank
     if not isinstance(k, int):
         if k is not None:
             raise ValueError("k must be an integer or None.")
-
-    if k == "auto" and total_RAM_available_gb is None:
-        raise ValueError("If k is set to 'auto', total_RAM_available_gb must be provided.")
-    
-    if k != "auto" and (total_RAM_available_gb is not None):
-        warnings.warn("total_RAM_available_gb will be ignored, as k is not \"auto\".")
-    
-    
+ 
     subset.obs["XMatch_group"] = np.where(subset.obs[group_by].isin(test_group), "test", "reference")
     
     if isinstance(k, int):
