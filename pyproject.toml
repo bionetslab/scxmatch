@@ -4,7 +4,7 @@ version = "1.0.0"
 authors = [
   { name="Anna Moeller", email="anna.moeller@fau.de" },
 ]
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 description = "Python implementation for single-cell cross-match test."
 readme = "README.md"
 classifiers = [
