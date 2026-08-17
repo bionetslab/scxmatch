@@ -103,7 +103,8 @@ Estimates the worst-case peak RAM usage of a test run with k on an anndata with 
 
 ```python
 import anndata as ad
-import scxmatch
+import scxmatch as xm
+import scanpy as sc
 
 # Load your AnnData object or load scanpy dataset
 # adata = ad.read_h5ad("your_data.h5ad")
